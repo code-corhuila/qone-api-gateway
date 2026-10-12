@@ -41,7 +41,7 @@ deploy/                              image and the compose fragment qone-infra i
 | `/api/v1/enrollment/*` | `qone-enrollment-api:8000` | `health`, `certificates/verify/{code}` |
 | `/api/v1/billing/*` | `qone-billing-api:8000` | `health` |
 | `/api/v1/advisor/*` | `qone-advisor-api:8000` | `health` |
-| `/api/v1/sagas*` | `qone-workflow:8000` | no |
+| `/api/v1/sagas*` | `qone-workflow:8000` | `health` |
 
 Everything else is `404` with the envelope. A protected route without `Authorization` is `401`.
 More than 20 requests per second per client (burst 40) is `429` with `Retry-After`. A domain
