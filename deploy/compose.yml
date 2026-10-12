@@ -1,0 +1,25 @@
+# The gateway as qone-infra composes it (Annex G): the ONLY service that publishes a port to
+# the host (norm 5.6.1). The allowed origins come from .env.
+services:
+  qone-api-gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: qone-api-gateway:${IMAGE_TAG:-dev}
+    container_name: qone-api-gateway
+    restart: unless-stopped
+    environment:
+      GATEWAY_CORS_ORIGINS: ${GATEWAY_CORS_ORIGINS:-http://localhost:5173}
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    networks:
+      - platform
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  platform:
+    external: true
