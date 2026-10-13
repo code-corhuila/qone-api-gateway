@@ -1,0 +1,27 @@
+# Rate limit, CORS, correlation and the credential filter (Annex F). Rendered by the image's
+# envsubst from GATEWAY_CORS_ORIGINS (a regular expression; several origins with `|`).
+
+# 20 requests per second per client with a burst of 40 on every /api/ route; above that, 429.
+limit_req_zone $binary_remote_addr zone=api:10m rate=20r/s;
+limit_req_status 429;
+
+# Only the origins of the front are allowed; an unknown origin gets no Access-Control-Allow-Origin.
+# Never `*` together with credentials.
+map $http_origin $cors_origin {
+    default "";
+    "~^(${GATEWAY_CORS_ORIGINS})$" $http_origin;
+}
+
+# Reuse the X-Correlation-Id the client sent, or create one; it is sent to the service,
+# returned and logged, and it is the traceId of every envelope.
+map $http_x_correlation_id $correlation_id {
+    default $http_x_correlation_id;
+    ""      $request_id;
+}
+
+# A protected route without Authorization is rejected here, cheaply; the service still
+# validates the signature, the algorithm and the expiry.
+map $http_authorization $has_credential {
+    default 1;
+    ""      0;
+}
