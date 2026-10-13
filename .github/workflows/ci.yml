@@ -1,0 +1,25 @@
+name: CI
+on:
+  pull_request:
+    branches: [develop, qa, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -f deploy/Dockerfile -t qone-api-gateway:ci .
+      - name: nginx -t accepts the rendered configuration
+        run: docker run --rm -e GATEWAY_CORS_ORIGINS='http://localhost:5173' qone-api-gateway:ci sh -c '/docker-entrypoint.d/20-envsubst-on-templates.sh && nginx -t'
+      - name: Run it on an isolated network (every domain is down) and smoke-check it
+        run: |
+          docker network create platform
+          docker run -d --rm --name gateway-ci --network platform -p 8080:8080 -e GATEWAY_CORS_ORIGINS='http://localhost:5173' qone-api-gateway:ci
+          for i in $(seq 1 20); do curl -fs http://localhost:8080/health && break; sleep 1; done
+          sh tests/smoke.sh http://localhost:8080
+          docker logs gateway-ci | tail -n 3
+          docker stop gateway-ci
