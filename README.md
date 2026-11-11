@@ -64,8 +64,9 @@ docker run -d --rm --name gateway --network platform -p 8080:8080 -e GATEWAY_COR
 sh tests/smoke.sh http://localhost:8080      # health, 404, 401, correlation, CORS, 503, 429
 ```
 
-`ci.yml` does the same on every pull request: build, `nginx -t` on the rendered configuration,
-the smoke checks against the container on an isolated network.
+`ci.yml` does the same on every pull request: gitleaks over the whole history (a committed secret
+fails the job), build, `nginx -t` on the rendered configuration, the smoke checks against the
+container on an isolated network.
 
 ## Adding a domain
 
