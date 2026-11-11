@@ -36,12 +36,12 @@ deploy/                              image and the compose fragment qone-infra i
 | Route | Service | Public |
 |---|---|---|
 | `GET /health` | the gateway itself | yes |
-| `/api/v1/identity/*` | `qone-identity-api:8000` | `health`, `auth/register`, `auth/login` |
-| `/api/v1/catalog/*` | `qone-catalog-api:8000` | `health` |
-| `/api/v1/enrollment/*` | `qone-enrollment-api:8000` | `health`, `certificates/verify/{code}` |
-| `/api/v1/billing/*` | `qone-billing-api:8000` | `health` |
-| `/api/v1/advisor/*` | `qone-advisor-api:8000` | `health` |
-| `/api/v1/sagas*` | `qone-workflow:8000` | `health` |
+| `/api/v1/identity/*` | `qone-identity-api:8000` | `health`, `health/ready`, `auth/register`, `auth/login` |
+| `/api/v1/catalog/*` | `qone-catalog-api:8000` | `health`, `health/ready` |
+| `/api/v1/enrollment/*` | `qone-enrollment-api:8000` | `health`, `health/ready`, `certificates/verify/{code}` |
+| `/api/v1/billing/*` | `qone-billing-api:8000` | `health`, `health/ready` |
+| `/api/v1/advisor/*` | `qone-advisor-api:8000` | `health`, `health/ready` |
+| `/api/v1/sagas*` | `qone-workflow:8000` | `health`, `health/ready` |
 
 Everything else is `404` with the envelope. A protected route without `Authorization` is `401`.
 More than 20 requests per second per client (burst 40) is `429` with `Retry-After`. A domain
@@ -61,7 +61,7 @@ Only the origins of the front (`GATEWAY_CORS_ORIGINS`, a regular expression; sev
 docker build -f deploy/Dockerfile -t qone-api-gateway:dev .
 docker network create platform              # once; qone-infra creates it in the full platform
 docker run -d --rm --name gateway --network platform -p 8080:8080 -e GATEWAY_CORS_ORIGINS='http://localhost:5173' qone-api-gateway:dev
-sh tests/smoke.sh http://localhost:8080      # health, 404, 401, correlation, CORS, 503, 429
+sh tests/smoke.sh http://localhost:8080      # health, public ready probes, 404, 401, correlation, CORS, 503, 429
 ```
 
 `ci.yml` does the same on every pull request: gitleaks over the whole history (a committed secret
