@@ -18,6 +18,9 @@ curl -s "$BASE/nothing-here" | grep -q '"error":"NOT_FOUND"' || fail "404 has no
 [ "$(status "$BASE/api/v1/billing/invoices/me")" = "401" ] || fail "protected route without credential is not 401"
 [ "$(status "$BASE/api/v1/sagas/enroll-student")" = "401" ] || fail "the saga start without credential is not 401"
 [ "$(status "$BASE/api/v1/sagas/health")" != "401" ] || fail "the workflow health is not public"
+for prefix in identity catalog enrollment billing advisor sagas; do
+  [ "$(status "$BASE/api/v1/$prefix/health/ready")" != "401" ] || fail "the ready probe of $prefix is not public"
+done
 curl -s "$BASE/api/v1/billing/invoices/me" | grep -q '"error":"UNAUTHORIZED"' || fail "401 has no envelope"
 curl -s "$BASE/api/v1/billing/invoices/me" | grep -q '"traceId":"' || fail "401 has no traceId"
 
