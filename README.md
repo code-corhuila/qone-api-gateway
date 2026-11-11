@@ -52,7 +52,7 @@ resolved per request, never at boot.
 
 Only the origins of the front (`GATEWAY_CORS_ORIGINS`, a regular expression; several with `|`).
 `Authorization`, `Content-Type`, `Idempotency-Key` and `X-Correlation-Id` are allowed;
-`X-Correlation-Id` and `Location` are exposed. An unknown origin receives no
+`X-Correlation-Id`, `Location` and `Retry-After` (the advisor quota, the rate limit) are exposed. An unknown origin receives no
 `Access-Control-Allow-Origin`; never `*` with credentials.
 
 ## How to run it
