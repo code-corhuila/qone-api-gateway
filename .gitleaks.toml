@@ -1,0 +1,11 @@
+# The default rules, plus OpenAI keys in every format: the default rule only knows the old
+# `T3BlbkFJ` shape, and an OPENAI_API_KEY pasted into a script, an example or a document must fail
+# the scan (code-corhuila/qone-docs#55). Nothing of this repository is allowlisted.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API key (sk-, sk-proj-, sk-svcacct-, sk-admin-)"
+regex = '''sk-(proj-|svcacct-|admin-)?[A-Za-z0-9_-]{20,}'''
+keywords = ["sk-"]
