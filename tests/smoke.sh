@@ -18,6 +18,9 @@ curl -s "$BASE/nothing-here" | grep -q '"error":"NOT_FOUND"' || fail "404 has no
 [ "$(status "$BASE/api/v1/billing/invoices/me")" = "401" ] || fail "protected route without credential is not 401"
 [ "$(status "$BASE/api/v1/sagas/enroll-student")" = "401" ] || fail "the saga start without credential is not 401"
 [ "$(status "$BASE/api/v1/sagas/health")" != "401" ] || fail "the workflow health is not public"
+for prefix in identity catalog enrollment billing advisor sagas; do
+  [ "$(status "$BASE/api/v1/$prefix/health/ready")" != "401" ] || fail "the ready probe of $prefix is not public"
+done
 curl -s "$BASE/api/v1/billing/invoices/me" | grep -q '"error":"UNAUTHORIZED"' || fail "401 has no envelope"
 curl -s "$BASE/api/v1/billing/invoices/me" | grep -q '"traceId":"' || fail "401 has no traceId"
 
@@ -30,6 +33,7 @@ generated=$(header X-Correlation-Id "$BASE/health")
 header Access-Control-Allow-Headers -X OPTIONS -H "Origin: $ORIGIN" -H 'Access-Control-Request-Method: POST' "$BASE/api/v1/billing/invoices" | grep -qi 'Idempotency-Key' || fail "preflight does not allow Idempotency-Key"
 [ "$(header Access-Control-Allow-Origin -H "Origin: $ORIGIN" "$BASE/health")" = "$ORIGIN" ] || fail "allowed origin not echoed"
 header Access-Control-Expose-Headers -H "Origin: $ORIGIN" "$BASE/health" | grep -qi 'X-Correlation-Id' || fail "X-Correlation-Id not exposed"
+header Access-Control-Expose-Headers -H "Origin: $ORIGIN" "$BASE/health" | grep -qi 'Retry-After' || fail "Retry-After not exposed"
 [ -z "$(header Access-Control-Allow-Origin -H 'Origin: http://evil.example' "$BASE/health")" ] || fail "unknown origin received Access-Control-Allow-Origin"
 
 [ "$(status -H 'Authorization: Bearer x' "$BASE$DOWN_ROUTE")" = "503" ] || fail "a stopped service does not answer 503"
