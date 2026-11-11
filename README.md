@@ -46,7 +46,9 @@ deploy/                              image and the compose fragment qone-infra i
 Everything else is `404` with the envelope. A protected route without `Authorization` is `401`.
 More than 20 requests per second per client (burst 40) is `429` with `Retry-After`. A domain
 whose service is down answers `503` on its routes while the rest keep working: names are
-resolved per request, never at boot.
+resolved per request, never at boot. While a service is rolled out its name answers with both
+copies: the connect timeout is 1 s, so a request that hits the copy going away moves to the
+other one in about a second instead of five.
 
 ## CORS
 
